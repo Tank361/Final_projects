@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".Note">
     <EditText
         android:hint="請輸入文字..."
         android:layout_alignParentLeft="true"
@@ -13,7 +13,7 @@
         android:singleLine="true" />
 
     <ListView
+        android:id="@+id/listInputText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listInputText" />
+        android:layout_height="wrap_content"/>
 </LinearLayout>
