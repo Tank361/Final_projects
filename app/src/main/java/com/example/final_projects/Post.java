@@ -1,19 +1,19 @@
 package com.example.final_projects;
 
+import android.media.Image;
+
+
 public class Post {
-    public String day;
+    public String time;
+    public String temp;
     public String description;
-    public String high;
-    public String low;
-    public String precip;
     public String humidity;
 
-    public Post(String day, String description, String high, String low, String precip, String humidity) {
-        this.day = day;
+    //對各元件指派資料型態
+    public Post(String time, String temp , String description, String humidity) {
+        this.time = time;
+        this.temp = temp;
         this.description = description;
-        this.high = high;
-        this.low = low;
-        this.precip = precip;
         this.humidity = humidity;
     }
 }

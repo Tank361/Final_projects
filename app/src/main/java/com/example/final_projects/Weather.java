@@ -6,18 +6,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.util.Log;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+
 
 public class Weather extends AppCompatActivity {
 
@@ -27,54 +26,67 @@ public class Weather extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
+        sendRequestWithHttpURLConnection();
+    }
+    ArrayList<Post> data = new ArrayList<>();
+    private void sendRequestWithHttpURLConnection() {
+        //開啟線程發起網路請求
+        new Thread(new Runnable() {
+            @Override
+            public void run () {
+                HttpURLConnection connection = null;
+                BufferedReader reader;
+                try {
+                    //獲取HttpURLConnection實例
+                    URL url = new URL("https://api.openweathermap.org/data/2.5/forecast?q=taipei&APPID=9c39fa3ce9d953fdd507d7d9f77093ef&lang=zh_tw&units=metric");
+                    connection = (HttpURLConnection) url.openConnection();
+                    //設置請求方法和自由定制
+                    connection.setUseCaches(false);
+                    connection.setRequestMethod("POST");
+                    connection.setConnectTimeout(8000);
+                    connection.setReadTimeout(8000);
+                    connection.setDoInput(true);
+                    connection.setDoOutput(true);
+                    connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+                    connection.connect();
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy
-                .Builder()
-                .permitAll()
-                .build();
-        StrictMode.setThreadPolicy(policy);
+                    InputStream in = connection.getInputStream();
+                    //對輸入流進行讀取
+                    reader = new BufferedReader(new InputStreamReader(in));
 
-        ArrayList<Post> data = new ArrayList<>();
-        // JSON連接伺服器資料
-        try {
-            HttpClient client = new DefaultHttpClient();
-            HttpGet get = new HttpGet("http://163.17.9.130/weather_15day.php");
-            HttpResponse response = client.execute(get);
-            String jsonText = EntityUtils.toString(response.getEntity());
+                    //解析JSON多層資料
+                    JSONObject jsonObject = new JSONObject(reader.readLine());
+                    JSONArray array = jsonObject.getJSONArray("list");
+                    for (int i=0; i<array.length(); i++) {
+                        String time = array.getJSONObject(i).getString("dt_txt");
+                        String temp = array.getJSONObject(i).getJSONObject("main").getString("temp");
+                        String humidity = array.getJSONObject(i).getJSONObject("main").getString("humidity");
+                        String description = array.getJSONObject(i).getJSONArray("weather").getJSONObject(0).getString("description");
 
-            JSONArray array = new JSONArray(jsonText);
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject obj = array.getJSONObject(i);
-                String day = obj.getString("day");
-                String description = obj.getString("description");
-                Integer high = obj.getInt("high");
-                Integer low = obj.getInt("low");
-                Integer precip = obj.getInt("precip");
-                Integer humidity = obj.getInt("humidity");
-                data.add(new Post(
-                        "日期："+day,
-                        "天氣："+description,
-                        "最高溫："+high+"°",
-                        "最低溫："+low+"°",
-                        "降雨機率："+precip+"%",
-                        "濕度："+humidity+"%" ));
+                        //顯示各元件取得的資料
+                        data.add(new Post(
+                                time,
+                                temp+"°",
+                                description,
+                                humidity+"%")); }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (connection != null) {
+                        connection.disconnect();
+                    }
+                }
             }
-
-        } catch (Exception e) {
-            Log.e("aaa", e.getMessage());
-            e.printStackTrace();
-        }
-
+        }).start();
         // 連結元件
         recycler_view = (RecyclerView) findViewById(R.id.recycler_view);
         // 設置RecyclerView為列表型態
-        MyAdapter adapter = new MyAdapter(this, data);
+        MyAdapter adapter = new MyAdapter(data);
         recycler_view.setLayoutManager(new LinearLayoutManager(this));
         // 設置格線
         recycler_view.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-
         recycler_view.setAdapter(adapter);
-
     }
-
 }
+
+
