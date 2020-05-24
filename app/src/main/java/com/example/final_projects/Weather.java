@@ -43,8 +43,8 @@ public class Weather extends AppCompatActivity {
                     //設置請求方法和自由定制
                     connection.setUseCaches(false);
                     connection.setRequestMethod("POST");
-                    connection.setConnectTimeout(8000);
-                    connection.setReadTimeout(8000);
+                    connection.setConnectTimeout(20000);
+                    connection.setReadTimeout(20000);
                     connection.setDoInput(true);
                     connection.setDoOutput(true);
                     connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");

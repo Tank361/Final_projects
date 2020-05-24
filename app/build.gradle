@@ -31,4 +31,8 @@ dependencies {
 
     //RecyclerView的編譯
     implementation 'androidx.recyclerview:recyclerview:1.2.0-alpha02'
+
+    //noinspection GradleCompatible
+    implementation 'com.android.support:design:27.1.0'
+
 }
